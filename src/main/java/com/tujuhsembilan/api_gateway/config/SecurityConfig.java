@@ -6,9 +6,10 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
 
 import com.tujuhsembilan.api_gateway.utils.JwtAuthenticationFilter;
-import com.tujuhsembilan.core.utils.JwtUtil;
+import com.tujuhsembilan.api_gateway.utils.JwtUtil;
 
 @Configuration
 @EnableWebFluxSecurity
@@ -31,13 +32,14 @@ public class SecurityConfig {
     SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, JwtAuthenticationFilter jwtFilter) {
         return http
                 .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/user-service/auth/**").permitAll() // Izinkan tanpa token
-                        .anyExchange().authenticated() // Lainnya wajib terautentikasi
+                        .pathMatchers("/auth-service/auth/**").permitAll()
+                        .anyExchange().authenticated()
                 )
                 .addFilterAt(jwtFilter, SecurityWebFiltersOrder.AUTHENTICATION)
-                .httpBasic().disable()
-                .formLogin().disable()
-                .csrf().disable()
+                .httpBasic(httpBasic -> httpBasic.disable())
+                .formLogin(formLogin -> formLogin.disable())
+                .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
+                .csrf(csrf -> csrf.disable())
                 .build();
     }
 }
